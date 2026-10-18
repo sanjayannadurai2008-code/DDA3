@@ -1,0 +1,167 @@
+1. Sort an Array (LeetCode 912)
+
+class Solution {
+    public int[] sortArray(int[] nums) {
+        mergeSort(nums, 0, nums.length - 1);
+        return nums;
+    }
+
+    void mergeSort(int[] nums, int left, int right) {
+        if (left >= right) return;
+
+        int mid = left + (right - left) / 2;
+
+        mergeSort(nums, left, mid);
+        mergeSort(nums, mid + 1, right);
+        merge(nums, left, mid, right);
+    }
+
+    void merge(int[] nums, int left, int mid, int right) {
+        int[] temp = new int[right - left + 1];
+        int i = left, j = mid + 1, k = 0;
+
+        while (i <= mid && j <= right) {
+            if (nums[i] <= nums[j])
+                temp[k++] = nums[i++];
+            else
+                temp[k++] = nums[j++];
+        }
+
+        while (i <= mid)
+            temp[k++] = nums[i++];
+
+        while (j <= right)
+            temp[k++] = nums[j++];
+
+        for (i = 0; i < temp.length; i++)
+            nums[left + i] = temp[i];
+    }
+}
+2. Top K Frequent Elements (LeetCode 347)
+
+import java.util.*;
+
+class Solution {
+    public int[] topKFrequent(int[] nums, int k) {
+        Map<Integer, Integer> freq = new HashMap<>();
+
+        for (int num : nums)
+            freq.put(num, freq.getOrDefault(num, 0) + 1);
+
+        PriorityQueue<Integer> pq = new PriorityQueue<>(
+            (a, b) -> freq.get(b) - freq.get(a)
+        );
+
+        for (int num : freq.keySet())
+            pq.offer(num);
+
+        int[] result = new int[k];
+
+        for (int i = 0; i < k; i++)
+            result[i] = pq.poll();
+
+        return result;
+    }
+}
+3. Find Median from Data Stream (LeetCode 295)
+
+import java.util.*;
+
+class MedianFinder {
+    PriorityQueue<Integer> lower;
+    PriorityQueue<Integer> upper;
+
+    public MedianFinder() {
+        lower = new PriorityQueue<>(Collections.reverseOrder());
+        upper = new PriorityQueue<>();
+    }
+
+    public void addNum(int num) {
+        lower.offer(num);
+        upper.offer(lower.poll());
+
+        if (upper.size() > lower.size())
+            lower.offer(upper.poll());
+    }
+
+    public double findMedian() {
+        if (lower.size() > upper.size())
+            return lower.peek();
+
+        return ((double) lower.peek() + upper.peek()) / 2.0;
+    }
+}
+4. Course Schedule (LeetCode 207)
+
+import java.util.*;
+
+class Solution {
+    public boolean canFinish(int numCourses, int[][] prerequisites) {
+        List<List<Integer>> graph = new ArrayList<>();
+        int[] indegree = new int[numCourses];
+
+        for (int i = 0; i < numCourses; i++)
+            graph.add(new ArrayList<>());
+
+        for (int[] p : prerequisites) {
+            graph.get(p[1]).add(p[0]);
+            indegree[p[0]]++;
+        }
+
+        Queue<Integer> queue = new LinkedList<>();
+
+        for (int i = 0; i < numCourses; i++) {
+            if (indegree[i] == 0)
+                queue.offer(i);
+        }
+
+        int completed = 0;
+
+        while (!queue.isEmpty()) {
+            int course = queue.poll();
+            completed++;
+
+            for (int next : graph.get(course)) {
+                indegree[next]--;
+
+                if (indegree[next] == 0)
+                    queue.offer(next);
+            }
+        }
+
+        return completed == numCourses;
+    }
+}
+5. Merge Intervals (LeetCode 56)
+
+import java.util.*;
+
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        if (intervals.length == 0)
+            return new int[0][0];
+
+        Arrays.sort(intervals, (a, b) ->
+            Integer.compare(a[0], b[0])
+        );
+
+        List<int[]> result = new ArrayList<>();
+
+        int start = intervals[0][0];
+        int end = intervals[0][1];
+
+        for (int i = 1; i < intervals.length; i++) {
+            if (intervals[i][0] <= end) {
+                end = Math.max(end, intervals[i][1]);
+            } else {
+                result.add(new int[]{start, end});
+                start = intervals[i][0];
+                end = intervals[i][1];
+            }
+        }
+
+        result.add(new int[]{start, end});
+
+        return result.toArray(new int[result.size()][]);
+    }
+}
